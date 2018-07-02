@@ -1,0 +1,12 @@
+#Steps to setup serverside
+# Babak Naderi (babak.naderi@tu-berlin.de)
+
+1. Install MySQL, PHP, and a webserver (NGINX, or Apache)
+2. Create corresponding users, and databases in the MySQL
+3. Put the verificattion.php and admin.php in the corresponding folders with a proper access right (both will contain u/p for database) the verificattion.php should be reachable by all games.
+
+4. edit both files to contain u/p of a correponding database account.
+
+
+
+
