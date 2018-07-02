@@ -1,4 +1,5 @@
 <?php
+//should be edited
 $servername = "localhost";
 $username = "XXX";
 $password = "XXX";
