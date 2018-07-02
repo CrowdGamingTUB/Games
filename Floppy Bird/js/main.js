@@ -25,18 +25,18 @@ var states = Object.freeze({
 
 var currentstate;
 
-var gravity = 0.25;
+var gravity = 0.20;
 var velocity = 0;
 var position = 180;
 var rotation = 0;
-var jump = -4.6;
+var jump = -4.0;
 var flyArea = $("#flyarea").height();
 
 var score = 0;
 var highscore = 0;
 
-var pipeheight = 140;
-var pipewidth = 52;
+var pipeheight = 130;
+var pipewidth = 60;
 var pipes = new Array();
 
 var replayclickable = false;
@@ -263,16 +263,40 @@ $(document).keydown(function(e){
 });
 
 //Handle mouse down OR touch start
-if("ontouchstart" in window)
-   $(document).on("touchstart", screenClick);
-else
-   $(document).on("mousedown", screenClick);
+
+
+if("onmousedown" in window) {
+    console.log('TOUCH');
+    $(document).on("mousedown", screenClick);
+}else if("ontouchstart" in window){
+    console.log('TOUCH');
+    $(document).on("touchstart", screenClick);
+}
+
+
+
 
 function screenClick()
 {
-   if(currentstate == states.GameScreen)
+   console.log('CLICKED');
+    var delay_val = 0;
+    console.log(milliseconds);
+    if(milliseconds == 'a'){
+        delay_val = 0;
+    }
+    else if(milliseconds == 'b'){
+        delay_val = 100;
+    }
+    else if(milliseconds == 'c'){
+        delay_val = 200;
+    }
+    else if(milliseconds == 'd') {
+        delay_val = 300;
+    }
+
+    if(currentstate == states.GameScreen)
    {
-      playerJump();
+      setTimeout(playerJump, delay_val);
    }
    else if(currentstate == states.SplashScreen)
    {
