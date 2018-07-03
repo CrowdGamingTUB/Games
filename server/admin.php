@@ -1,11 +1,11 @@
 <?php
 //should be edited
 $servername = "localhost";
-$username = "XXX";
-$password = "XXX";
+$username = "code";
+$password = "XXXX";
 $dbname = "TUB_GAMING";
 
-echo "1";
+//echo "1";
 // Create connection
 $conn = mysqli_connect($servername, $username, $password, $dbname);
 // Check connection
@@ -13,13 +13,15 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
 
-$sql = "SELECT * FROM data";
+$sql = "SELECT * FROM DATA";
 $result = $conn->query($sql);
 
  
-echo " 
+echo ' 
 <html>
 <head>
+<link rel="stylesheet" href="../css/bootstrap.min.css"> <script src="../js/bootstrap.min.js"></script> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1"> 		 		
+
 //css
 <style>
 table
@@ -30,26 +32,22 @@ border-color:pink;
 }
 </style>
 </head>
-";
+';
 
 echo "<table border='1'>
 <tr>
-<th>name</th>
-<th>cloudKey</th>
-<th>dateTime</th>
-<th>score</th>
-<th>version</th>
-<th>numOfJump</th>
-<th>numOfFallingDown</th>
-<th>numOfShootUzi</th>
-<th>numOfhitUzi</th>
-<th>numOfShootShotGun</th>
-<th>numOfhitShotGun</th>
-<th>dateGame</th>
-<th>timeGame</th>
+<th>ID</th>
+<th>Created at</th>
 
-<th>inputs</th>
+<th>Game ID</th>
+<th>Game version</th>
+<th>Player ID</th>
 
+<th>Code</th>
+
+<th>Playing date</th>
+<th>Playing time</th>
+<th>Stat</th>
 
 </tr>";
  
@@ -59,20 +57,15 @@ if ($result->num_rows > 0) {
 
     
 	  echo "<tr>";
-	  echo "<td>" . $row['username'] . "</td>";
-	  echo "<td>" . $row['cloudKey'] . "</td>";
-	  echo "<td>" . $row['dateTime'] . "</td>";
-	  echo "<td>" . $row['score'] . "</td>";
-	  echo "<td>" . $row['version'] . "</td>";
-	  echo "<td>" . $row['numOfJump'] . "</td>";
-	  echo "<td>" . $row['numOfFallingDown'] . "</td>";
-	  echo "<td>" . $row['numOfShootUzi'] . "</td>";
-	  echo "<td>" . $row['numOfhitUzi'] . "</td>";
-	  echo "<td>" . $row['numOfShootShotGun'] . "</td>";
-	  echo "<td>" . $row['numOfhitShotGun'] . "</td>";
-	  echo "<td>" . $row['dateGame'] . "</td>";
-	  echo "<td>" . $row['timeGame'] . "</td>";
-	  echo "<td>" . $row['inputs'] . "</td>";
+	  echo "<td>" . $row['ID'] . "</td>";
+	  echo "<td>" . $row['CREATED_AT'] . "</td>";
+	  echo "<td>" . $row['GAME_ID'] . "</td>";
+	  echo "<td>" . $row['GAME_VERSION'] . "</td>";
+	  echo "<td>" . $row['PLAYER_ID'] . "</td>";
+	  echo "<td>" . $row['VERIFICATION_CODE'] . "</td>";
+	  echo "<td>" . $row['PLAYING_DATE'] . "</td>";
+	  echo "<td>" . $row['PLAYING_TIME'] . "</td>";
+	  echo "<td>" . $row['STAT'] . "</td>";
 	  echo "</tr>";
 	  
   
