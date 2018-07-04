@@ -454,8 +454,11 @@ function showScore()
    replayclickable = true;
 }
 
-$("#replay").click(function() {
-   //make sure we can only click once
+$("#replay").click(remplyClicked());
+
+// Babak
+function remplyClicked(){
+//make sure we can only click once
    if(!replayclickable)
       return;
    else
@@ -472,8 +475,7 @@ $("#replay").click(function() {
       //start the game over!
       showSplash();
    });
-});
-
+}
 function playerScore()
 {
    score += 1;
