@@ -440,7 +440,7 @@ function showScore()
       //When the animation is done, animate in the replay button and SWOOSH!
       soundSwoosh.stop();
       soundSwoosh.play();
-      $("#replay").transition({ y: '0px', opacity: 1}, 600, 'ease');
+     // $("#replay").transition({ y: '0px', opacity: 1}, 600, 'ease');
       
       //also animate in the MEDAL! WOO!
       if(wonmedal)
@@ -452,12 +452,24 @@ function showScore()
    
    //make the replay button clickable
    replayclickable = true;
+   showReplyTimer();
 }
 
-$("#replay").click(remplyClicked());
+function showReplyTimer(){
+	$("#counter3").css({y: '40px', opacity: 0 });
+	$("#counter2").css({ opacity: 0 });
+	$("#counter1").css({opacity: 0 });
+	
+	setTimeout(replyClicked, 2500);
+	$("#counter3").transition({ y: '0px', opacity: 1}, 600, 'ease').transition({ opacity: 0, delay: 100}, 500, 'ease');
+	$("#counter2").transition({ opacity: 1,delay: 1000}, 600, 'ease').transition({ opacity: 0, delay: 100}, 500, 'ease');
+	$("#counter1").transition({ opacity: 1,delay: 2000}, 600, 'ease').transition({ opacity: 0, delay: 100}, 500, 'ease');
+}
+
+//$("#replay").click(replyClicked());
 
 // Babak
-function remplyClicked(){
+function replyClicked(){
 //make sure we can only click once
    if(!replayclickable)
       return;

@@ -291,6 +291,19 @@ Screen - Game
    cursor: pointer;
 }
 
+.counter
+{
+   position: absolute;
+   opacity: 0;
+   top: 170px;
+   left: 71px;
+   height: 98px;
+   width: 98px;
+   cursor: pointer;
+}
+
+
+
 .boundingbox
 {
    position: absolute;
