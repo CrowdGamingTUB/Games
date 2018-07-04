@@ -42,7 +42,7 @@ var pipes = new Array();
 var replayclickable = false;
 
 //in second
-var testDuration=20;
+var testDuration=90;
 var gameStarted=false;
 var gameStartDate = null;
 var numberOfTries=0;
