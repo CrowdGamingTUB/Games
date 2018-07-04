@@ -41,6 +41,17 @@ var pipes = new Array();
 
 var replayclickable = false;
 
+//in second
+var testDuration=20;
+var gameStarted=false;
+var gameStartDate = null;
+var numberOfTries=0;
+var scoreLog=[];
+
+var gameID="FB_C0";
+var gameVersion="04072018v1";
+var baseURL="http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
+
 //sounds
 var volume = 30;
 var soundJump = new buzz.sound("assets/sounds/sfx_wing.ogg");
@@ -53,6 +64,7 @@ buzz.all().setVolume(volume);
 //loops
 var loopGameloop;
 var loopPipeloop;
+var testloop;
 
 $(document).ready(function() {
    if(window.location.search == "?debug")
@@ -61,14 +73,25 @@ $(document).ready(function() {
       pipeheight = 200;
    
    //get the highscore
-   var savedscore = getCookie("highscore");
-   if(savedscore != "")
-      highscore = parseInt(savedscore);
+  // var savedscore = getCookie("highscore");
+  // if(savedscore != "")
+    //  highscore = parseInt(savedscore);
    
    //start with the splash screen
    showSplash();
+   //show timer on the right corner
+   showTimer(testDuration);
 });
 
+String.prototype.format = String.prototype.f = function() {
+    var s = this,
+        i = arguments.length;
+
+    while (i--) {
+        s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
+    }
+    return s;
+};
 function getCookie(cname)
 {
    var name = cname + "=";
@@ -99,6 +122,8 @@ function showSplash()
    rotation = 0;
    score = 0;
    
+   numberOfTries++;
+	
    //update the player in preparation for the next game
    $("#player").css({ y: 0, x: 0});
    updatePlayer($("#player"));
@@ -117,6 +142,71 @@ function showSplash()
    //fade in the splash
    $("#splash").transition({ opacity: 1 }, 2000, 'ease');
 }
+
+//babak
+function showTimer(remaining){
+	//clear all
+	$('#timer').find('span[id^="S"]').css({ opacity: 0 });
+	$("#text").css({ opacity: 1 });
+	
+	var s1=Math.floor(remaining /10);
+	var s2= remaining%10;
+	
+	$("#S1"+s1).css({ opacity: 1 });
+	$("#S2"+s2).css({ opacity: 1 });
+}
+
+//babak
+function testPeriodisOver()
+{
+   playerDead();
+   clearInterval(testloop);
+   testloop = null;	
+   $("#finished").transition({ opacity: 1 }, 1000, 'snap').transition({ scale: [1.2, 1.2] });   
+   stats=getPlayStats();
+   vcode=uuidv4();
+   console.log(stats);
+   //call to the finish page..
+   query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&gs={6}";
+   call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
+   console.log(call);
+   
+   setTimeout(function() {
+	window.location.href=baseURL+call;
+	}, 1000);
+   
+   
+}
+//babak
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+//babak
+function getPlayStats(){
+	stats= "test::dur:{0};ntry:{1};hs:{2};scores{3};;system::wiw:{4};wih:{5};nacn:{6};np:{7}";
+	return stats.f(testDuration,numberOfTries,highscore,JSON.stringify(scoreLog),window.innerWidth,window.innerHeight,navigator.appCodeName,navigator.platform);
+}
+
+//babak
+function updateTimer(){
+
+	if (!gameStarted) 
+		return;
+	var now=  new Date();
+	var seconds = Math.floor((now.getTime() - gameStartDate.getTime()) / 1000);
+	
+	if (seconds<=testDuration){
+		showTimer(testDuration-seconds);
+	}else{
+		gameStarted=false;
+		testPeriodisOver();
+	}
+}
+
 
 function startGame()
 {
@@ -140,6 +230,12 @@ function startGame()
    var updaterate = 1000.0 / 60.0 ; //60 times a second
    loopGameloop = setInterval(gameloop, updaterate);
    loopPipeloop = setInterval(updatePipes, 1400);
+   if (!gameStarted){
+	   gameStarted=true;
+	   gameStartDate= new Date();
+	   testloop= setInterval(updateTimer, 1000);
+   }
+   
    
    //jump from the start!
    playerJump();
@@ -274,8 +370,6 @@ if("onmousedown" in window) {
 }
 
 
-
-
 function screenClick()
 {
    console.log('CLICKED');
@@ -384,6 +478,7 @@ function playerDead()
    //it's time to change states. as of now we're considered ScoreScreen to disable left click/flying
    currentstate = states.ScoreScreen;
 
+   scoreLog.push(score);
    //destroy our gameloops
    clearInterval(loopGameloop);
    clearInterval(loopPipeloop);
@@ -452,7 +547,8 @@ function showScore()
    
    //make the replay button clickable
    replayclickable = true;
-   showReplyTimer();
+   if (gameStarted)
+	showReplyTimer();
 }
 
 function showReplyTimer(){
@@ -470,6 +566,8 @@ function showReplyTimer(){
 
 // Babak
 function replyClicked(){
+	if (!gameStarted)
+		return;
 //make sure we can only click once
    if(!replayclickable)
       return;
@@ -488,6 +586,7 @@ function replyClicked(){
       showSplash();
    });
 }
+
 function playerScore()
 {
    score += 1;

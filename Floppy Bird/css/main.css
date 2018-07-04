@@ -299,11 +299,44 @@ Screen - Game
    left: 71px;
    height: 98px;
    width: 98px;
-   cursor: pointer;
 }
 
+#timer
+{
+   position: absolute;
+   opacity: 1;
+   top: 100px;
+   right: 200px;
+   height: 50px;
+   width: 180px;
 
+}
+.timerNum1{
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	opacity: 0;
+}
+.timerNum2{
+	position: absolute;
+	left: 25px;
+	top: 0px;
+	opacity: 0;
+}
 
+#text{
+   position: absolute;
+   opacity: 0;
+   top: 0px;
+   right: 0px;
+}
+
+#finished{
+   position: absolute;
+   opacity: 0;
+   top: 100px;
+   left: 200px;
+}
 .boundingbox
 {
    position: absolute;
