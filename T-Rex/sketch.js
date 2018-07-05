@@ -23,15 +23,22 @@ function setup() {
 
   textSize(20);
 }
+var c=0;
+var doit=false;
 
 function draw() {
-  background(51);
-
+	c++;
+	 if (c%5==0)
+		doit=true;
+	else	
+		doit=false;
+  if (doit){
+	background(51);
 	drawHUD();
+  }
+  handleLevel(frameCount);
 
-	handleLevel(frameCount);
-
-	dino.update(horizon);
+  dino.update(horizon);
 
   handleObstacles();
 }
@@ -46,6 +53,7 @@ function drawHUD() {
 	strokeWeight(2);
   line(0, horizon, width, horizon);
 
+ 
 	/* draw score */
 	noStroke();
   text("Score: " + score, width / 2, 30);
@@ -62,7 +70,8 @@ function handleObstacles() {
   for (var i = obstacles.length - 1; i >= 0; i--) {
 
 		obstacles[i].update(obstacleSpeed);
-		obstacles[i].draw();
+		if (doit)
+			obstacles[i].draw();
 
 		if (obstacles[i].hits(dino)) // if there's a collision
 			endGame();
