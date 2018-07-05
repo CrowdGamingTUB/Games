@@ -4,10 +4,10 @@ function TRex(x, y, radius) {
 	this.y = y;
 
 	this.yVelocity = 0;
-	this.speed = 1;
+	this.speed = 2;
 	this.onGround = true;
 
-	this.radius = radius; // size of circle
+	this.radius = 2*radius; // size of circle
 }
 
 /**
@@ -38,7 +38,7 @@ TRex.prototype.update = function(platform) {
 	*/
 TRex.prototype.jump = function() {
 
-	this.yVelocity = -(this.radius * 0.7); // jump
+	this.yVelocity = -(this.radius * 0.5); // jump
 };
 
 TRex.prototype.draw = function() {
