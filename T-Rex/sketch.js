@@ -12,11 +12,11 @@ var testloop;
 var obstaclesCounter = 0;
 var jumpCounter = 0;
 //in second
-var testDuration = 9;
+var testDuration = 90;
 var gameStarted = false;
 var gameStartDate = null;
 var timeLeft = testDuration;
-var numberOfTries = 0;
+var numberOfTries = 1;
 var scoreLog = [];
 var boxesLog = [];
 var jumpLog = [];
@@ -32,7 +32,7 @@ var baseURL = "http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
 // Network parameters
 var delay_val = 0;
 var PL = 0;
-var fps = 60;
+var fps = 10;
 
 
 // store data
@@ -76,12 +76,11 @@ function setup() {
 
 function draw() {
 	
-	frameCount++;
 	if (frameCount % round(60/fps) == 0)
-		doit=true;
+		drawit=true;
 	else	
-		doit=false;
-	if (doit){
+		drawit=false;
+	if (drawit){
 		background(51);
 		drawHUD();
 	}
@@ -121,7 +120,7 @@ function handleObstacles() {
 
 		obstacles[i].update(obstacleSpeed);
 		// skip drawing in case of frame drop
-		if (doit)
+		if (drawit)
 			obstacles[i].draw();
 
 		if (obstacles[i].hits(dino)) // if there's a collision
@@ -192,6 +191,7 @@ function endGame() {
 
 }
 
+//Steven
 function RestartCountdown(){
 	restart_counter--;
 	switch (restart_counter) {
@@ -217,6 +217,7 @@ function RestartCountdown(){
 	}
 } 
 
+//Steven
 function RestartGame(){
 	// stats
 	scoreLog.push(score);
@@ -235,16 +236,10 @@ function RestartGame(){
 	loop();
 }
 
-// function QuitGame()
-// {
-	
-// }
-
-
 function testPeriodisOver()
 {
 	clearInterval(testloop);
-	testloop = null;
+	testloop = null;	
 	document.getElementById("RestartDiv").style.padding = "10px";
 	document.getElementById("Restart_Text").textContent="The playing time is over!";
 	noLoop();
