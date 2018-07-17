@@ -12,10 +12,11 @@ function Wall(x, w) {
  */
 Wall.prototype.draw = function(y, previousWall) {
 
-	var greenBlue = random(100);
-	var red = greenBlue + random(155);
-  stroke(red, greenBlue, greenBlue);
-	strokeWeight(5);
+	var R = random(20);
+	var G = random(20);
+	var B = random(200);
+    stroke(R,G,B);
+	strokeWeight(8);
 	noFill();
 
 	/* drawing left */

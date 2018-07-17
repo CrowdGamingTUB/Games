@@ -11,6 +11,7 @@ var inputDelayState;
 var testloop;
 var obstaclesCounter = 0;
 var jumpCounter = 0;
+var myFrameCount = 0;
 //in second
 var testDuration = 90;
 var gameStarted = false;
@@ -20,6 +21,11 @@ var numberOfTries = 1;
 var scoreLog = [];
 var boxesLog = [];
 var jumpLog = [];
+var keyLog = [];
+var timeLog = [];
+var playTime = 0;
+var previousTime = 0;
+var difficultyLog = [];
 var highscore = 0;
 
 // draw flag
@@ -32,7 +38,7 @@ var baseURL = "http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
 // Network parameters
 var delay_val = 0;
 var PL = 0;
-var fps = 10;
+var fps = 60;
 
 
 // store data
@@ -80,8 +86,9 @@ function draw() {
 		drawit=true;
 	else	
 		drawit=false;
+	
 	if (drawit){
-		background(51);
+		background(0);
 		drawHUD();
 	}
 	
@@ -102,7 +109,7 @@ function drawHUD() {
 
 	/* draw score */
 	noStroke();
-	text("Score: " + score,  0.5*(width), 0.1*windowHeight);
+	text("Score: " + round(score/10)*10,  0.5*(width), 0.1*windowHeight);
 	text("Boxes: " + obstaclesCounter,  0.8*(width), 0.1*windowHeight);
 	text("Time left: " + timeLeft + " sec",  0.2*(width), 0.1*windowHeight);
 	
@@ -139,7 +146,7 @@ function handleObstacles() {
 	* speeds game up, pushes new obstacles, & handles score
 	*/
 function handleLevel(n) {
-	
+	myFrameCount += 1;
 	if (n % 50 === 0) { // every 0.5 seconds
 		var n = noise(n); // noisey
 		if (n > 0.5){
@@ -148,7 +155,7 @@ function handleLevel(n) {
 	}
 	if (n % 240 === 0) // every 2 seconds
 		obstacleSpeed *= 1.025; // speed up
-	score++;
+	score = round((myFrameCount * Math.pow(obstacleSpeed,2.5))/1000);
 }
 
 /**
@@ -163,11 +170,12 @@ function newObstacle() {
 }
 
 function keyPressed() {
-
+	var now =  new Date();
+	var keyStamp = Math.floor(now.getTime() - gameStartDate.getTime());
+	if (keyCode === 32)
+		keyLog.push("up,"+keyStamp);
 	if ((keyCode === UP_ARROW || keyCode === 32) && dino.onGround) // jump if possible
-	{
 		inputDelayState = setTimeout(InputDelay, delay_val);
-	}	
 }
 
 function InputDelay(){
@@ -187,7 +195,11 @@ function endGame() {
 	restart_counter = 5;	
 	document.getElementById("RestartDiv").style.padding = "10px";
 	document.getElementById("Restart_Text").textContent="GAME OVER";
-	restartState = setInterval(RestartCountdown, 666);
+	playTime = round(frameCount/60) - previousTime;
+	timeLog.push(playTime);
+	previousTime = round(frameCount/60);
+	if (timeLeft > 3)
+		restartState = setInterval(RestartCountdown, 666);
 
 }
 
@@ -223,15 +235,18 @@ function RestartGame(){
 	scoreLog.push(score);
 	boxesLog.push(obstaclesCounter);
 	jumpLog.push(jumpCounter);
+	difficultyLog.push(round(10*obstacleSpeed)/10);
+	keyLog.push("|");
 	if (score > highscore)
 		highscore = score;
 	numberOfTries++;
 	// reset
 	obstacles = [];
-	frameCount = 0;
+	myFrameCount = 0;
 	score = 0;
 	obstaclesCounter = 0;
 	obstacleSpeed = 12;
+	jumpCounter = 0;
 	textSize(40);
 	loop();
 }
@@ -244,14 +259,23 @@ function testPeriodisOver()
 	document.getElementById("Restart_Text").textContent="The playing time is over!";
 	noLoop();
 	noStroke();
+	scoreLog.push(score);
+	boxesLog.push(obstaclesCounter);
+	jumpLog.push(jumpCounter);
+	difficultyLog.push(round(10*obstacleSpeed)/10);
+	playTime = round(frameCount/60) - previousTime;
+	timeLog.push(playTime);
+	if (score > highscore)
+		highscore = score;
 	stats=getPlayStats();
 	vcode=uuidv4();
 	console.log(stats);
+	gameStarted=false;
+	return
 	// call to the finish page..
 	query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&gs={6}";
 	call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
 	console.log(call);
-
 	setTimeout(function() {
 	window.location.href=baseURL+call;
 	}, 1000);   
@@ -267,21 +291,14 @@ function uuidv4() {
 
 //babak
 function getPlayStats(){
-	stats= "test::dur:{0};ntry:{1};hs:{2};scores:{3};boxes:{4};jumps:{5};system:wiw:{6};wih:{7};nacn:{8};np:{9}";
-	return stats.f(testDuration,numberOfTries,highscore,JSON.stringify(scoreLog),JSON.stringify(boxesLog),JSON.stringify(jumpLog),window.innerWidth,window.innerHeight,navigator.appCodeName,navigator.platform);
+	stats= "test::dur:{0};ntry:{1};hs:{2};scores:{3};playingtime:{4};difficulties:{5};boxes:{6};jumps:{7};keys:{8};system:wiw:{9};wih:{10};nacn:{10};np:{11}";
+	return stats.f(testDuration,numberOfTries,highscore,JSON.stringify(scoreLog),JSON.stringify(timeLog),JSON.stringify(difficultyLog),JSON.stringify(boxesLog),JSON.stringify(jumpLog),JSON.stringify(keyLog),window.innerWidth,window.innerHeight,navigator.appCodeName,navigator.platform);
 }
 
-//babak
 function updateTimer(){
-
-	if (!gameStarted) 
-		return;
 	var now=  new Date();
 	var seconds = Math.floor((now.getTime() - gameStartDate.getTime()) / 1000);
-	if (seconds<=testDuration){
-		timeLeft=	testDuration-seconds;
-	}else{
-		gameStarted=false;
+	timeLeft = testDuration - seconds;
+	if (timeLeft <= 0)
 		testPeriodisOver();
-	}
 }

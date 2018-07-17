@@ -9,7 +9,7 @@ var InputDelayState=0;
 var testloop;
 var projectilesCounter = 0;
 //in second
-var testDuration = 20;
+var testDuration = 90;
 var gameStarted = false;
 var gameStartDate = null;
 var timeLeft = testDuration;
@@ -18,6 +18,10 @@ var score=0;
 var scoreLog = [];
 var projectileLog = [];
 var keyLog = [];
+var timeLog = [];
+var playTime = 0;
+var previousTime = 0;
+var difficultyLog = [];
 var highscore = 0;
 var projectileCounter = 0;
 
@@ -77,13 +81,13 @@ function draw() {
 		drawit=false;
 	
 	if (drawit)
-		background(51);
+		background(0);
 	
 	handleProjectiles();
 	handlePlayer();
 	handleKeys();
 	attemptNewProjectile(frameCount);
-	drawScore();
+	drawScore();		
 }
 
 /**
@@ -97,7 +101,7 @@ function attemptNewProjectile(frame) {
 			projectiles.push(generateSquare());
 		}
 		// increase difficulty
-		difficulty += 0.075;
+		difficulty += 0.1;
 	}
 }
 
@@ -146,10 +150,10 @@ function InputDelay(speed_x, speed_y){
  * draws the player's score
  */
 function drawScore() {
-	score = frameCount;
+	score += 10*difficulty;
 	noStroke();
 	if (drawit){
-		text("Score: " + score, width / 2, 0.1*windowHeight);
+		text("Score: " + round(score/100), width / 2, 0.1*windowHeight);
 		text("Projectiles: " + projectileCounter,  0.8*(width), 0.1*windowHeight);
 		text("Time left: " + timeLeft + " sec",  0.2*(width), 0.1*windowHeight);
 	}
@@ -201,10 +205,14 @@ function endGame() {
 	noLoop();
 	fill(255);
 	noStroke();
-	restart_counter = 5;	
+	restart_counter = 5;
 	document.getElementById("RestartDiv").style.padding = "10px";
 	document.getElementById("Restart_Text").textContent="GAME OVER";
-	restartState = setInterval(RestartCountdown, 666);
+	playTime = round(frameCount/60) - previousTime;
+	timeLog.push(playTime);
+	previousTime = round(frameCount/60);
+	if (timeLeft > 3)
+		restartState = setInterval(RestartCountdown, 666);
 }
 
 
@@ -264,7 +272,9 @@ function RestartCountdown(){
 function RestartGame(){
 	// stats
 	scoreLog.push(score);
+	difficultyLog.push(round(10*difficulty)/10);
 	projectileLog.push(projectileCounter);
+	keyLog.push("|");
 	if (score > highscore)
 		highscore = score;
 	numberOfTries++;
@@ -289,12 +299,16 @@ function testPeriodisOver()
 	noLoop();
 	noStroke();
 	scoreLog.push(score);
+	playTime = round(frameCount/60) - previousTime;
+	timeLog.push(playTime);
+	difficultyLog.push(round(10*difficulty)/10);
 	projectileLog.push(projectileCounter);
 	if (score > highscore)
 		highscore = score;
 	stats=getPlayStats();
 	vcode=uuidv4();
 	console.log(stats);
+	gameStarted=false;
 	return
 	// call to the finish page..
 	query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&gs={6}";
@@ -316,21 +330,15 @@ function uuidv4() {
 
 //babak
 function getPlayStats(){
-	stats= "test::dur:{0};ntry:{1};hs:{2};scores:{3};projectiles:{4};keys:{5};system:wiw:{6};wih:{7};nacn:{8};np:{9}";
-	return stats.f(testDuration,numberOfTries,highscore,JSON.stringify(scoreLog),JSON.stringify(projectileLog),JSON.stringify(keyLog),window.innerWidth,window.innerHeight,navigator.appCodeName,navigator.platform);
+	stats= "test::dur:{0};ntry:{1};hs:{2};scores:{3};playingtime:{4};difficulties:{5};projectiles:{6};keys:{7};system:wiw:{8};wih:{9};nacn:{10};np:{11}";
+	return stats.f(testDuration,numberOfTries,highscore,JSON.stringify(scoreLog),JSON.stringify(timeLog),JSON.stringify(difficultyLog),JSON.stringify(projectileLog),JSON.stringify(keyLog),window.innerWidth,window.innerHeight,navigator.appCodeName,navigator.platform);
 }
 
 //babak
 function updateTimer(){
-
-	if (!gameStarted) 
-		return;
 	var now=  new Date();
 	var seconds = Math.floor((now.getTime() - gameStartDate.getTime()) / 1000);
-	if (seconds<=testDuration){
-		timeLeft=	testDuration-seconds;
-	}else{
-		gameStarted=false;
+	timeLeft = testDuration - seconds;
+	if (timeLeft <= 0)
 		testPeriodisOver();
-	}
 }
