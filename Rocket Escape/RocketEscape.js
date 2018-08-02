@@ -1,17 +1,38 @@
-// game elements
+//############ Adjustable parameters ############
+//###############################################
+//+++ delay_val: simulates x milliseconds of input delay
+//+++ PL: simulates x % of command packets been droped
+//+++ fps: sets the frame rate of the game: default = 60
+//+++ testDuration: time in seconds till the game ends
+//+++ difficulty: how randomly will the track change = difficulty
+//+++ difficulty_gain: how fast will the difficulity increase
+//+++ track_scaling: what should be the width of the track
+
+// network or encoding
+var delay_val = 0;
+var PL = 0;
+var fps = 60;
+// game characteristics
+var difficulty = 1;
+var difficulty_gain = 0.0015;
+var track_scaling = 2.5;
+// others
+var testDuration = 90;
+
+//############ game elements ############
+//#######################################
 const SIZE = 30;
 var fidelity; 	// how detailed the walls are
 var walls = [];
-var difficulty; // how sharp the curves are
 var score;
 var rocket;
 
-// states and counter
+//############ states and counter ############
+//############################################
 var restartState;
 var InputDelayState=0;
 var testloop;
 //in second
-var testDuration = 90;
 var gameStarted = false;
 var gameStartDate = null;
 var timeLeft = testDuration;
@@ -22,19 +43,17 @@ var timeLog = [];
 var playTime = 0;
 var previousTime = 0;
 var difficultyLog = [];
+var difficulty_default = difficulty;
 var highscore = 0;
-
 // draw flag
 var drawit = true;
 
+//############ log data #############
+//###################################
 var gameID = "Rocket_C0";
 var gameVersion = "08072018v1";
 var baseURL = "http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
 
-// Network parameters
-var delay_val = 0;
-var PL = 0;
-var fps = 10;
 
 // store data
 String.prototype.format = String.prototype.f = function() {
@@ -66,7 +85,6 @@ function setup() {
 	document.getElementById("Restart_Text").style.fontSize = "xx-large"; 
 	
 	fidelity = height / 10;
-	difficulty = 1;
 	score = 0;
 
 	var randomColor = color(random(255), random(255), random(255));
@@ -128,8 +146,8 @@ function handleWalls() {
 
 	/* move walls */
 	// adjust multiplier after noise for difficulty and the last parameter for track width
-	var wall1 = new Wall(noise((score/2 + i) * 0.0015) * width, width / 2.5);
-	var wall2 = new Wall(noise(((score/2 + i + 1)) * 0.0015) * width, width / 2.5);
+	var wall1 = new Wall(noise((score/2 + i) * difficulty_gain) * width, width / track_scaling);
+	var wall2 = new Wall(noise(((score/2 + i + 1)) * difficulty_gain) * width, width / track_scaling);
 
 	walls.push(wall1);
 	walls.push(wall2);
@@ -232,7 +250,7 @@ function RestartGame(){
 	frameCount = 0;
 	score = 0;
 	walls = [];
-	difficulty = 1;
+	difficulty = difficulty_default;
 	randomColor = color(random(255), random(255), random(255));
 	rocket = new Rocket(noise(0) * width, height - SIZE, SIZE, randomColor);
 

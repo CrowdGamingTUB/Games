@@ -1,12 +1,12 @@
 function Rocket(x, y, s, color) {
 
-  this.x = x;
-  this.y = y;
+	this.x = x;
+	this.y = y;
 
-  this.xVelocity = null;
-  this.speed = 5;
+	this.xVelocity = null;
+	this.speed = 5;
 
-  this.size = s;
+	this.size = s;
 	this.color = color;
 }
 

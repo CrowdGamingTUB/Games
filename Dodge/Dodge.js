@@ -1,15 +1,36 @@
-// game elements
+//############ Adjustable parameters ############
+//###############################################
+//+++ delay_val: simulates x milliseconds of input delay
+//+++ PL: simulates x % of command packets been droped
+//+++ fps: sets the frame rate of the game: default = 60
+//+++ testDuration: time in seconds till the game ends
+//+++ difficulty: default speed of moving objects (increases over time)
+//+++ difficulty_gain: how much speed is added over time
+//+++ speed_gain: movement speed gained over time
+
+// network or encoding
+var delay_val = 0;
+var PL = 0;
+var fps = 60;
+// game characteristics
+var difficulty = 5;
+var difficulty_gain = 0.1;
+var speed_gain = 0.8;
+// others
+var testDuration = 90;
+
+//############ game elements ############
+//#######################################
 var player;
 var projectiles = []; // track on-screen Squares
-var difficulty; // difficulty of the projectiles
 
-// states and counter
+//############ states and counter ############
+//############################################
 var restartState;
 var InputDelayState=0;
 var testloop;
 var projectilesCounter = 0;
 //in second
-var testDuration = 90;
 var gameStarted = false;
 var gameStartDate = null;
 var timeLeft = testDuration;
@@ -22,20 +43,18 @@ var timeLog = [];
 var playTime = 0;
 var previousTime = 0;
 var difficultyLog = [];
+var difficulty_default = difficulty;
 var highscore = 0;
 var projectileCounter = 0;
-
-// draw flag
+//draw flag
 var drawit = true;
 
+//############ log data #############
+//###################################
 var gameID = "Dodge_C0";
 var gameVersion = "08072018v1";
 var baseURL = "http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
 
-// Network parameters
-var delay_val = 0;
-var PL = 0;
-var fps = 60;
 
 // store data
 String.prototype.format = String.prototype.f = function() {
@@ -63,8 +82,6 @@ function setup() {
 	cnv.position(x, y);
 	document.getElementById("RestartDiv").style.padding = "0px";
 	document.getElementById("Restart_Text").style.fontSize = "xx-large"; 
-	
-	difficulty = 2;
 
 	/* initialize player */
 	player = new Square(width / 2, height / 2, 30, color("#FFFFFF"), null, difficulty * 0.8);
@@ -101,7 +118,7 @@ function attemptNewProjectile(frame) {
 			projectiles.push(generateSquare());
 		}
 		// increase difficulty
-		difficulty += 0.1;
+		difficulty += difficulty_gain;
 	}
 }
 
@@ -124,7 +141,7 @@ function keyPressed() {
 
 function handleKeys() {
 
-	var speed = difficulty * 0.8;
+	var speed = difficulty * speed_gain;
 
 	if (keyIsDown(UP_ARROW))
 		InputDelayState = setTimeout(InputDelay, delay_val, 0, -speed);
@@ -280,7 +297,7 @@ function RestartGame(){
 	numberOfTries++;
 	// reset
 	projectiles = [];
-	difficulty = 2;
+	difficulty = difficulty_default;
 	frameCount = 0;
 	score = 0;
 	frameCount = 0;
