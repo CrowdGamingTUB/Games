@@ -35,19 +35,19 @@ Rocket.prototype.collidesWith = function(wall) {
  */
 Rocket.prototype.draw = function() {
 
-  fill(255);
-  stroke(this.color);
-  strokeWeight(3);
+	fill(255);
+	stroke(this.color);
+	strokeWeight(3);
 
-  var halfSize = this.size / 2;
-  var height = Math.sqrt(Math.pow(this.size, 2) - Math.pow(halfSize, 2));
+	var halfSize = this.size / 2;
+	var height = Math.sqrt(Math.pow(this.size, 2) - Math.pow(halfSize, 2));
 
 	/* draw triangle */
-  beginShape();
-  vertex(this.x, this.y);
-  vertex(this.x - halfSize, this.y + height);
-  vertex(this.x + halfSize, this.y + height);
-  endShape(CLOSE);
+	beginShape();
+	vertex(this.x, this.y);
+	vertex(this.x - halfSize, this.y + height);
+	vertex(this.x + halfSize, this.y + height);
+	endShape(CLOSE);
 };
 
 /**

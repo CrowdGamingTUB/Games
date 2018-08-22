@@ -1,3 +1,6 @@
+// ###############################################################
+// ####################   GAME: Floppy Bird   ####################
+// ###############################################################
 /*
    Copyright 2014 Nebez Briefkani
    floppybird - main.js
@@ -15,7 +18,50 @@
    limitations under the License.
 */
 
+// network or encoding
+var delay_val = 0;
+var fps = 60;
+var PL = 0;
+// game characteristics
+var gravity = 0.20;
+var velocity = 0;
+var position = 180;
+var rotation = 0;
+var jump = -4.0;
+var pipeheight = 130;
+var pipewidth = 60;
+// others
+var testDuration = 10;
+
+//############ game elements ############
+//#######################################
+var score = 0;
+var highscore = 0;
+var pipes = new Array();
+var flyArea = $("#flyarea").height();
+
+//############ states and counter ############
+//############################################
+//loops
+var loopGameloop;
+var loopPipeloop;
+var testloop;
+var currentstate;
+//in second
+var gameStarted = false;
+var gameStartDate = new Date();
+var numberOfTries=0;
+var playTime;
+var previousTime = 0;
+var scoreLog = [];
+var keyLog = [];
+var timeLog = [];
+// others
+var frameCount=0;
+var rnd;
+var drawit;
 var debugmode = false;
+var replayclickable = false;
 
 var states = Object.freeze({
    SplashScreen: 0,
@@ -23,31 +69,9 @@ var states = Object.freeze({
    ScoreScreen: 2
 });
 
-var currentstate;
-
-var gravity = 0.20;
-var velocity = 0;
-var position = 180;
-var rotation = 0;
-var jump = -4.0;
-var flyArea = $("#flyarea").height();
-
-var score = 0;
-var highscore = 0;
-
-var pipeheight = 130;
-var pipewidth = 60;
-var pipes = new Array();
-
-var replayclickable = false;
-
-//in second
-var testDuration=90;
-var gameStarted=false;
-var gameStartDate = null;
-var numberOfTries=0;
-var scoreLog=[];
-
+//############ log data #############
+//###################################
+var SendToServer = false;
 var gameID="FB_C0";
 var gameVersion="04072018v1";
 var baseURL="http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
@@ -61,10 +85,6 @@ var soundDie = new buzz.sound("assets/sounds/sfx_die.ogg");
 var soundSwoosh = new buzz.sound("assets/sounds/sfx_swooshing.ogg");
 buzz.all().setVolume(volume);
 
-//loops
-var loopGameloop;
-var loopPipeloop;
-var testloop;
 
 $(document).ready(function() {
    if(window.location.search == "?debug")
@@ -168,13 +188,14 @@ function testPeriodisOver()
    console.log(stats);
    //call to the finish page..
    query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&gs={6}";
-   call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
-   console.log(call);
-   
-   setTimeout(function() {
-	window.location.href=baseURL+call;
-	}, 1000);
-   
+   if (SendToServer){
+	   call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
+	   console.log(call);
+	   
+	   setTimeout(function() {
+		window.location.href=baseURL+call;
+		}, 1000);
+   }
    
 }
 //babak
@@ -187,8 +208,8 @@ function uuidv4() {
 
 //babak
 function getPlayStats(){
-	stats= "test::dur:{0};ntry:{1};hs:{2};scores{3};;system::wiw:{4};wih:{5};nacn:{6};np:{7}";
-	return stats.f(testDuration,numberOfTries,highscore,JSON.stringify(scoreLog),window.innerWidth,window.innerHeight,navigator.appCodeName,navigator.platform);
+	stats= "test::dur:{0};ntry:{1};hs:{2};scores{3};timeLog{4};keys{5};system::wiw:{6};wih:{7};nacn:{8};np:{9}";
+	return stats.f(testDuration,numberOfTries,highscore,JSON.stringify(scoreLog),JSON.stringify(timeLog),JSON.stringify(keyLog),window.innerWidth,window.innerHeight,navigator.appCodeName,navigator.platform);
 }
 
 //babak
@@ -196,13 +217,13 @@ function updateTimer(){
 
 	if (!gameStarted) 
 		return;
-	var now=  new Date();
+	var now = new Date();
 	var seconds = Math.floor((now.getTime() - gameStartDate.getTime()) / 1000);
 	
-	if (seconds<=testDuration){
-		showTimer(testDuration-seconds);
+	if (seconds <= testDuration){
+		showTimer(testDuration - seconds);
 	}else{
-		gameStarted=false;
+		gameStarted = false;
 		testPeriodisOver();
 	}
 }
@@ -231,11 +252,10 @@ function startGame()
    loopGameloop = setInterval(gameloop, updaterate);
    loopPipeloop = setInterval(updatePipes, 1400);
    if (!gameStarted){
-	   gameStarted=true;
-	   gameStartDate= new Date();
+	   gameStarted = true;
+	   gameStartDate = new Date();
 	   testloop= setInterval(updateTimer, 1000);
    }
-   
    
    //jump from the start!
    playerJump();
@@ -250,20 +270,20 @@ function updatePlayer(player)
    $(player).css({ rotate: rotation, top: position });
 }
 
-var c=0;
-
 function gameloop() {
    var player = $("#player");
-   c++;
+   frameCount++;
    //update the player speed/position
    velocity += gravity;
    position += velocity;
    
-   if (c%5!=0)
-	   return;
-   
-   //update the player
-   updatePlayer(player);
+   	if (frameCount % Math.round(60/fps) == 0)
+		drawit=true;
+	else	
+		drawit=false;
+	
+	if (drawit)
+		updatePlayer(player);
    
    //create the bounding box
    var box = document.getElementById('player').getBoundingClientRect();
@@ -276,7 +296,7 @@ function gameloop() {
    var boxtop = ((box.height - boxheight) / 2) + box.top;
    var boxright = boxleft + boxwidth;
    var boxbottom = boxtop + boxheight;
-   
+ 
    //if we're in debug mode, draw the bounding box
    if(debugmode)
    {
@@ -350,48 +370,54 @@ function gameloop() {
    }
 }
 
+   
 //Handle space bar
-$(document).keydown(function(e){
-   //space bar!
-   if(e.keyCode == 32)
-   {
-      //in ScoreScreen, hitting space should click the "replay" button. else it's just a regular spacebar hit
-      if(currentstate == states.ScoreScreen)
-         $("#replay").click();
-      else
-         screenClick();
-   }
-});
+// $(document).keydown(function(e){
+   // if(e.keyCode == 32)
+   // {
+	  //// in ScoreScreen, hitting space should click the "replay" button. else it's just a regular spacebar hit
+	  // if(currentstate == states.ScoreScreen)
+		 // $("#replay").click();
+	  // else
+		 // screenClick();
+   // }
+// });
 
-//Handle mouse down OR touch start
-
-
+// Handle mouse down OR touch start
 if("onmousedown" in window) {
-    console.log('TOUCH');
-    $(document).on("mousedown", screenClick);
+	// console.log('TOUCH');
+	$(document).on("mousedown", screenClick);
 }else if("ontouchstart" in window){
-    console.log('TOUCH');
-    $(document).on("touchstart", screenClick);
+	// console.log('TOUCH');
+	$(document).on("touchstart", screenClick);
 }
 
 
 function screenClick()
-{
-   console.log('CLICKED');
-    var delay_val = 0;
-    console.log(milliseconds);
-    if(milliseconds == 'a'){
-        delay_val = 0;
-    }
-    else if(milliseconds == 'b'){
-        delay_val = 100;
-    }
-    else if(milliseconds == 'c'){
-        delay_val = 200;
-    }
-    else if(milliseconds == 'd') {
-        delay_val = 300;
-    }
+{	
+	var now =  new Date();
+	var keyStamp = Math.floor(now.getTime() - gameStartDate.getTime());
+	keyLog.push("LMB," + keyStamp);
+	
+	rnd = Math.floor((Math.random() * 1000))/10;
+	// console.log(rnd);
+	if ((rnd <= PL) && !(currentstate == states.SplashScreen))
+		return
+	// console.log('CLICKED');
+    // var delay_val;
+    // console.log(milliseconds);
+    // if(milliseconds == 'a'){
+        // delay_val = 0;
+    // }
+    // else if(milliseconds == 'b'){
+        // delay_val = 100;
+    // }
+    // else if(milliseconds == 'c'){
+        // delay_val = 200;
+    // }
+    // else if(milliseconds == 'd') {
+        // delay_val = 300;
+    // }
 
     if(currentstate == states.GameScreen)
    {
@@ -470,25 +496,30 @@ function setMedal()
 
 function playerDead()
 {
-   //stop animating everything!
-   $(".animated").css('animation-play-state', 'paused');
-   $(".animated").css('-webkit-animation-play-state', 'paused');
-   
-   //drop the bird to the floor
-   var playerbottom = $("#player").position().top + $("#player").width(); //we use width because he'll be rotated 90 deg
-   var floor = flyArea;
-   var movey = Math.max(0, floor - playerbottom);
-   $("#player").transition({ y: movey + 'px', rotate: 90}, 1000, 'easeInOutCubic');
-   
-   //it's time to change states. as of now we're considered ScoreScreen to disable left click/flying
-   currentstate = states.ScoreScreen;
+	//stop animating everything!
+	$(".animated").css('animation-play-state', 'paused');
+	$(".animated").css('-webkit-animation-play-state', 'paused');
 
-   scoreLog.push(score);
-   //destroy our gameloops
-   clearInterval(loopGameloop);
-   clearInterval(loopPipeloop);
-   loopGameloop = null;
-   loopPipeloop = null;
+	//drop the bird to the floor
+	var playerbottom = $("#player").position().top + $("#player").width(); //we use width because he'll be rotated 90 deg
+	var floor = flyArea;
+	var movey = Math.max(0, floor - playerbottom);
+	$("#player").transition({ y: movey + 'px', rotate: 90}, 1000, 'easeInOutCubic');
+
+	//it's time to change states. as of now we're considered ScoreScreen to disable left click/flying
+	currentstate = states.ScoreScreen;
+
+	scoreLog.push(score);
+	playTime = Math.round(frameCount/60) - previousTime;
+	previousTime = Math.round(frameCount/60);
+	timeLog.push(playTime);	
+	keyLog.push("|");
+	
+	//destroy our gameloops
+	clearInterval(loopGameloop);
+	clearInterval(loopPipeloop);
+	loopGameloop = null;
+	loopPipeloop = null;
 
    //mobile browsers don't support buzz bindOnce event
    if(isIncompatible.any())
@@ -550,10 +581,13 @@ function showScore()
       }
    });
    
-   //make the replay button clickable
-   replayclickable = true;
-   if (gameStarted)
-	showReplyTimer();
+    //make the replay button clickable
+    replayclickable = true;
+	var now = new Date();
+	var seconds = Math.floor((now.getTime() - gameStartDate.getTime()) / 1000);
+
+	if ((gameStarted) && (seconds + 3 <= testDuration))
+		showReplyTimer();
 }
 
 function showReplyTimer(){
@@ -573,7 +607,7 @@ function showReplyTimer(){
 function replyClicked(){
 	if (!gameStarted)
 		return;
-//make sure we can only click once
+	//make sure we can only click once
    if(!replayclickable)
       return;
    else

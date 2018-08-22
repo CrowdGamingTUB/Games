@@ -2,40 +2,71 @@
 <head>
 	<style>
 		* {
-		cursor: none;
+		  margin:0px;
+		  padding:0px;
+		  box-sizing:border-box;
+		  font-family:"Roboto Condensed",sans-serif;
 		}
+		body {
+		  background:#eee;
+		}
+		.btn {
+		  position:absolute;
+		  left:50%;
+		  transform:translate(-50%,-50%);
+		  width:200px;
+		  height:40px;
+		  border:1px solid #486dde;
+		  color:#486dde;
+		  line-height:40px;
+		  text-align:center;
+		  border-radius:15px;
+		  overflow:hidden;
+		  z-index:2;
+		  transition:all 800ms linear 0ms;
+		  font-size:18px;
+		}
+		.btn:before {
+		  content:"";
+		  position:absolute;
+		  left:0px;
+		  right:0px;
+		  top:0px;
+		  bottom:0px;
+		  margin:auto;
+		  width:400px;
+		  height:400px;
+		  left:-100px;
+		  border-radius:50%;
+		  transition:all 800ms ease-in-out;
+		  z-index:-1;
+		}
+		.btn:hover {
+		  color:#fff;
+		}
+		.btn:hover:before {
+		  box-shadow:inset 0px 0px 0px 200px #486dde;
+		}
+		.br {margin-bottom: 4em}
 
-		.HUD{
-			position:fixed;
-			left:50%;
-			top:30%;
-			z-index: 1;
-		}
-		
-		.HUD .Restart{
-			position:relative; 
-			left:-50%;
-			top:30%;
-			z-index: 1;
-
-			/*HUD-styles*/
-			background-color:#fff;
-			padding:10px;
-			border:solid 2px #444;
-			border-radius:10px;
-		}
 	</style>
-
-
-	<script type="text/javascript" src="p5min.js"></script>
-	<script type="text/javascript" src="p5.dom.js"></script>
-    <script type="text/javascript" src="sketch.js"></script>
-	<script type="text/javascript" src="Obstacle.js"></script>
+	<script language="javascript">
+		function changeImage() {
+			document.getElementById("imgID").src = "intro2.jpg";
+			document.getElementById("nextIntro").style.display = "none"; 
+			document.getElementById("startGame").style.display = "block";
+		}
+	</script>
 </head>
+
 <body>
-	<div class="HUD">
-		<div id="RestartDiv" class="Restart">
-			<span id="Restart_Text"></span>
-		</div>
+	<div class="imgContainer">
+		<div><img src="intro.jpg" id="imgID" style="position:relative; left:5%; top:25px; width:90%; height:100%; border:none;"/></div>
+		<p class="br"></p>
+	<div class="btn" id="nextIntro" onclick="changeImage()">Click here to continue</div>
+	<div class="btn" id="startGame" onclick="javascript:location.href='shooting.html'" style="display: none;">Click here to start</div>
 	</div>
-</body>
+</body>	
+
+
+

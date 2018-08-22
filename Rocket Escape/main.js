@@ -9,7 +9,7 @@
 //+++ track_scaling: what should be the width of the track
 
 // network or encoding
-var delay_val = 0;
+var delay_val = 300;
 var PL = 0;
 var fps = 60;
 // game characteristics
@@ -21,7 +21,7 @@ var testDuration = 90;
 
 //############ game elements ############
 //#######################################
-const SIZE = 30;
+const SIZE = 50;
 var fidelity; 	// how detailed the walls are
 var walls = [];
 var score;
@@ -50,6 +50,7 @@ var drawit = true;
 
 //############ log data #############
 //###################################
+var SendToServer = false;
 var gameID = "Rocket_C0";
 var gameVersion = "08072018v1";
 var baseURL = "http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
@@ -277,13 +278,14 @@ function testPeriodisOver()
 	gameStarted=false;
 	return
 	// call to the finish page..
-	query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&gs={6}";
-	call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
-	console.log(call);
+	if (SendToServer){
+		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
+		console.log(call);
 
-	setTimeout(function() {
-	window.location.href=baseURL+call;
-	}, 1000);   
+		setTimeout(function() {
+			window.location.href=baseURL+call;
+		}, 1000);
+	}
 }
 
 //babak

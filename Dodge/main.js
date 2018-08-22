@@ -51,6 +51,7 @@ var drawit = true;
 
 //############ log data #############
 //###################################
+var SendToServer = false;
 var gameID = "Dodge_C0";
 var gameVersion = "08072018v1";
 var baseURL = "http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
@@ -158,8 +159,8 @@ function handleKeys() {
 }
 
 function InputDelay(speed_x, speed_y){
-	this.rnd = Math.floor((Math.random() * 1000))/10;
-	if (this.rnd >= PL)
+	var rnd = Math.floor((Math.random() * 1000))/10;
+	if (rnd >= PL)
 		player.move(speed_x, speed_y);
 }
 
@@ -328,13 +329,14 @@ function testPeriodisOver()
 	gameStarted=false;
 	return
 	// call to the finish page..
-	query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&gs={6}";
-	call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
-	console.log(call);
+	if (SendToServer){
+		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
+		console.log(call);
 
-	setTimeout(function() {
-	window.location.href=baseURL+call;
-	}, 1000);   
+		setTimeout(function() {
+			window.location.href=baseURL+call;
+		}, 1000);
+	}
 }
 
 //babak
