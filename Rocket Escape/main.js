@@ -1,3 +1,7 @@
+// ###############################################################
+// ###################   GAME: Rocket Escape   ###################
+// ###############################################################
+
 //############ Adjustable parameters ############
 //###############################################
 //+++ delay_val: simulates x milliseconds of input delay
@@ -9,7 +13,7 @@
 //+++ track_scaling: what should be the width of the track
 
 // network or encoding
-var delay_val = 300;
+var delay_val = 0;
 var PL = 0;
 var fps = 60;
 // game characteristics
@@ -166,7 +170,7 @@ function endGame() {
 	fill(255);
 	restart_counter = 5;	
 	document.getElementById("RestartDiv").style.padding = "10px";
-	document.getElementById("Restart_Text").textContent="GAME OVER";
+	document.getElementById("Restart_Text").textContent="You Lost!";
 	playTime = round(frameCount/60) - previousTime;
 	timeLog.push(playTime);
 	previousTime = round(frameCount/60);

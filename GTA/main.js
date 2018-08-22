@@ -1,3 +1,7 @@
+// ###############################################################
+// ########################   GAME: GTA   ########################
+// ###############################################################
+
 //############ Adjustable parameters ############
 //###############################################
 //+++ delay_val: simulates x milliseconds of input delay
@@ -10,7 +14,7 @@
 //+++ sessionDuration: time in seconds for each session till restart
 
 // network or encoding
-var delay_val = 150;
+var delay_val = 0;
 var PL = 0;
 var fps = 60;
 // game characteristics
@@ -223,7 +227,7 @@ function endGame() {
 	noStroke();
 	restart_counter = 5;	
 	document.getElementById("RestartDiv").style.padding = "10px";
-	document.getElementById("Restart_Text").textContent="GAME OVER";
+	document.getElementById("Restart_Text").textContent="Time is over!";
 	playTime = round(frameCount/60) - previousTime;
 	timeLog.push(playTime);
 	previousTime = round(frameCount/60);

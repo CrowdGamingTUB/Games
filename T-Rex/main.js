@@ -1,3 +1,7 @@
+// ###############################################################
+// ####################   GAME: Floppy Bird   ####################
+// ###############################################################
+
 //############ Adjustable parameters ############
 //###############################################
 //+++ delay_val: simulates x milliseconds of input delay
@@ -214,7 +218,7 @@ function endGame() {
 	noStroke();
 	restart_counter = 5;	
 	document.getElementById("RestartDiv").style.padding = "10px";
-	document.getElementById("Restart_Text").textContent="GAME OVER";
+	document.getElementById("Restart_Text").textContent="You Lost!";
 	playTime = round(frameCount/60) - previousTime;
 	timeLog.push(playTime);
 	previousTime = round(frameCount/60);

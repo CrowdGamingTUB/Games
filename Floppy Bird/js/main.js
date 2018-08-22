@@ -1,6 +1,7 @@
 // ###############################################################
 // ####################   GAME: Floppy Bird   ####################
 // ###############################################################
+
 /*
    Copyright 2014 Nebez Briefkani
    floppybird - main.js
@@ -18,6 +19,7 @@
    limitations under the License.
 */
 
+
 // network or encoding
 var delay_val = 0;
 var fps = 60;
@@ -31,7 +33,7 @@ var jump = -4.0;
 var pipeheight = 130;
 var pipewidth = 60;
 // others
-var testDuration = 10;
+var testDuration = 90;
 
 //############ game elements ############
 //#######################################
