@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<head>
+	<style>
+		* {
+		cursor: none;
+		}
+
+		.HUD{
+			position:fixed;
+			left:50%;
+			top:30%;
+			z-index: 1;
+		}
+		
+		.HUD .Restart{
+			position:relative; 
+			left:-50%;
+			top:30%;
+			z-index: 1;
+
+			/*HUD-styles*/
+			background-color:#fff;
+			padding:10px;
+			border:solid 2px #444;
+			border-radius:10px;
+		}
+	</style>
+
+
+	<script type="text/javascript" src="p5min.js"></script>
+	<script type="text/javascript" src="p5.dom.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+	<script type="text/javascript" src="targets.js"></script>
+</head>
+<body>
+	<div class="HUD">
+		<div id="RestartDiv" class="Restart">
+			<span id="Restart_Text"></span>
+		</div>
+	</div>
+</body>
