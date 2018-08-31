@@ -4,28 +4,28 @@
 
 //############ Adjustable parameters ############
 //###############################################
-//+++ delay_val: simulates x milliseconds of input delay
-//+++ PL: simulates x % of command packets been droped
-//+++ fps: sets the frame rate of the game: default = 60
-//+++ testDuration: time in seconds till the game ends
 //+++ obstacleSpeed: how fast are the boxes moving
 //+++ size: what is the size of the player
 //+++ spawn_time: at x frames a new box might be spawned
 //+++ speed_gain: how fast should the game become faster
 //+++ speed_interval: at x frames the speed will be increased
 
-// network or encoding
-var delay_val = 0;
-var PL = 0;
-var fps = 60;
+
 // game characteristics
 var obstacleSpeed = 12;
 const size = 20;
 var spawn_time = 50;
 var speed_gain = 1.025;
 var speed_interval = 240;
-// others
-var testDuration = 90;
+
+// duration
+if (isTraining > 1)
+	testDuration = trainingDuration;
+else
+	testDuration = gamingDuration;
+
+// hasPlayed validation
+var InputThreshold = 64;
 
 //############ game elements ############
 //#######################################
@@ -63,11 +63,12 @@ var drawit = true;
 
 //############ log data #############
 //###################################
-var SendToServer = false;
-var gameID = "TREX_C0";
-var gameVersion = "05072018v1";
-var baseURL = "http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
-
+if (isTraining > 1)
+	var gameID = "TRex" + game_code + "_0_3";
+else
+	var gameID = "TRex" + game_code + "_3";
+var hasPlayed = 1;
+var statsMD5;
 
 // store data
 String.prototype.format = String.prototype.f = function() {
@@ -92,6 +93,7 @@ function setup() {
 	var cnv = createCanvas(0.9*windowWidth, 0.8*windowHeight);
 	var x = 0.05*windowWidth;
 	var y = (windowHeight - height) / 2;
+	// console.log("x: " + x + ", y: " + y + " ,wh: " + windowHeight + " ,h: " + height)
 	cnv.position(x, y);
 	document.getElementById("RestartDiv").style.padding = "0px";
 	document.getElementById("Restart_Text").style.fontSize = "xx-large"; 
@@ -100,7 +102,7 @@ function setup() {
 	horizon = height - 0.2*windowHeight;
 
 	score = 0;
-	dino = new TRex(0.1*windowWidth, height - horizon, 1.5*size);
+	dino = new TRex(0.1*windowWidth, 0, 1.5*size);
 
 	textSize(40);
 }
@@ -295,10 +297,19 @@ function testPeriodisOver()
 	vcode=uuidv4();
 	console.log(stats);
 	gameStarted=false;
-	return
+	
+	// check if played properly based on number of inputs
+	var hasPlayed = 1;
+	if (keyLog.length < InputThreshold*0.2*(testDuration/90))
+		hasPlayed = 0;
+		
+	// put md5 before keyLog
+	statsMD5 = md5(stats);
+	
 	// call to the finish page..
 	if (SendToServer){
-		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
+		query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&train={7}&hp={8}&md={9}&gs={6}";
+		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats,isTraining,hasPlayed,statsMD5);
 		console.log(call);
 
 		setTimeout(function() {

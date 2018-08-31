@@ -4,26 +4,27 @@
 
 //############ Adjustable parameters ############
 //###############################################
-//+++ delay_val: simulates x milliseconds of input delay
-//+++ PL: simulates x % of command packets been droped
-//+++ fps: sets the frame rate of the game: default = 60
 //+++ targetSpeed: default speed of moving objects (increases over time)
 //+++ MIN_INTERVAL_Shot: minumum time between two shots
 //+++ turnTime: time in seconds in the gray/disabled mode of the target
-//+++ testDuration: time in seconds till the game ends
 //+++ sessionDuration: time in seconds for each session till restart
 
-// network or encoding
-var delay_val = 0;
-var PL = 0;
-var fps = 60;
 // game characteristics
 var targetSpeed = 3;
 const MIN_INTERVAL_Shot = 250; // could be used for reload function
 var turnTime = 2;
-// others
-var testDuration = 89;
+
+// duration
+if (isTraining > 1)
+	testDuration = trainingDuration - 1;
+else
+	testDuration = gamingDuration - 1;
+
+// only for GTA
 var sessionDuration = 27;
+
+// hasPlayed validation
+var InputThreshold = 230;
 
 //############ game elements ############
 //#######################################
@@ -37,7 +38,7 @@ var mouseCrossX = 0;
 var mouseCrossY = 0;
 var mousePositionQ=[];
 // states and counter
-var score = 0;	// medals could be an additional feedback
+var score = 0;
 var col;
 var delayedFrames = Math.ceil(60*delay_val/1000);
 var restartState;
@@ -84,10 +85,14 @@ var drawit = true;
 
 //############ log data #############
 //###################################
-var SendToServer = false;
-var gameID = "GTA_C0";
-var gameVersion = "05072018v1";
-var baseURL = "http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
+if (isTraining > 1)
+	var gameID = "GTA_" + game_code + "_0_3";
+else
+	var gameID = "GTA_" + game_code + "_3";
+var hasPlayed = 1;
+var statsMD5;
+
+
 
 // store data
 String.prototype.format = String.prototype.f = function() {
@@ -320,16 +325,24 @@ function testPeriodisOver()
 	vcode=uuidv4();
 	console.log(stats);
 	gameStarted=false;
-	return
+	
+	// check if played properly based on number of inputs
+	if (keyLog.length < InputThreshold*0.2*(testDuration/90))
+		hasPlayed = 0;
+		
+	// put md5 before keyLog
+	statsMD5 = md5(stats);
+	
 	// call to the finish page..
 	if (SendToServer){
-		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
+		query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&train={7}&hp={8}&md={9}&gs={6}";
+		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats,isTraining,hasPlayed,statsMD5);
 		console.log(call);
 
 		setTimeout(function() {
 			window.location.href=baseURL+call;
 		}, 1000);
-	} 
+	}
 }
 
 function uuidv4() {
