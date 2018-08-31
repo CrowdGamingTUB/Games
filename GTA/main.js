@@ -15,7 +15,7 @@ const MIN_INTERVAL_Shot = 250; // could be used for reload function
 var turnTime = 2;
 
 // duration
-if (isTraining > 1)
+if (isTraining == 1)
 	testDuration = trainingDuration - 1;
 else
 	testDuration = gamingDuration - 1;
@@ -85,7 +85,7 @@ var drawit = true;
 
 //############ log data #############
 //###################################
-if (isTraining > 1)
+if (isTraining == 1)
 	var gameID = "GTA_" + game_code + "_0_3";
 else
 	var gameID = "GTA_" + game_code + "_3";
@@ -335,8 +335,8 @@ function testPeriodisOver()
 	
 	// call to the finish page..
 	if (SendToServer){
-		query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&train={7}&hp={8}&md={9}&gs={6}";
-		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats,isTraining,hasPlayed,statsMD5);
+		query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&train={7}&hp={8}&md={9}&st{10}&gs={6}";
+		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats,isTraining,hasPlayed,statsMD5,showToken);
 		console.log(call);
 
 		setTimeout(function() {
