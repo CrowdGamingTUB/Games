@@ -20,10 +20,6 @@
 */
 
 
-// network or encoding
-var delay_val = 0;
-var fps = 60;
-var PL = 0;
 // game characteristics
 var gravity = 0.20;
 var velocity = 0;
@@ -32,8 +28,15 @@ var rotation = 0;
 var jump = -4.0;
 var pipeheight = 130;
 var pipewidth = 60;
-// others
-var testDuration = 90;
+
+// duration
+if (isTraining == 1)
+	testDuration = trainingDuration;
+else
+	testDuration = gamingDuration;
+
+// hasPlayed validation
+var InputThreshold = 250;
 
 //############ game elements ############
 //#######################################
@@ -73,10 +76,12 @@ var states = Object.freeze({
 
 //############ log data #############
 //###################################
-var SendToServer = false;
-var gameID="FB_C0";
-var gameVersion="04072018v1";
-var baseURL="http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
+if (isTraining == 1)
+	var gameID = "Floppy" + game_code + "_0_3";
+else
+	var gameID = "Floppy" + game_code + "_3";
+var hasPlayed = 1;
+var statsMD5;
 
 //sounds
 var volume = 30;
@@ -188,18 +193,27 @@ function testPeriodisOver()
    stats=getPlayStats();
    vcode=uuidv4();
    console.log(stats);
-   //call to the finish page..
-   query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&gs={6}";
-   if (SendToServer){
-	   call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
-	   console.log(call);
-	   
-	   setTimeout(function() {
-		window.location.href=baseURL+call;
+	
+	// check if played properly based on number of inputs
+	var hasPlayed = 1;
+	if (keyLog.length < InputThreshold*0.2*(testDuration/90))
+		hasPlayed = 0;
+		
+	// put md5 before keyLog
+	statsMD5 = md5(stats);
+	
+	// call to the finish page..
+	if (SendToServer){
+		query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&train={7}&hp={8}&md={9}&st{10}&gs={6}";
+		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats,isTraining,hasPlayed,statsMD5,showToken);
+		console.log(call);
+
+		setTimeout(function() {
+			window.location.href=baseURL+call;
 		}, 1000);
-   }
-   
+	}
 }
+
 //babak
 function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -210,7 +224,7 @@ function uuidv4() {
 
 //babak
 function getPlayStats(){
-	stats= "test::dur:{0};ntry:{1};hs:{2};scores{3};timeLog{4};keys{5};system::wiw:{6};wih:{7};nacn:{8};np:{9}";
+	stats= "test::dur:{0};ntry:{1};hs:{2};scores:{3};playingtime:{4};keys:{5};system::wiw:{6};wih:{7};nacn:{8};np:{9}";
 	return stats.f(testDuration,numberOfTries,highscore,JSON.stringify(scoreLog),JSON.stringify(timeLog),JSON.stringify(keyLog),window.innerWidth,window.innerHeight,navigator.appCodeName,navigator.platform);
 }
 
@@ -516,7 +530,9 @@ function playerDead()
 	previousTime = Math.round(frameCount/60);
 	timeLog.push(playTime);	
 	keyLog.push("|");
-	
+	if(score > highscore)
+      highscore = score;
+	  
 	//destroy our gameloops
 	clearInterval(loopGameloop);
 	clearInterval(loopPipeloop);

@@ -4,26 +4,26 @@
 
 //############ Adjustable parameters ############
 //###############################################
-//+++ delay_val: simulates x milliseconds of input delay
-//+++ PL: simulates x % of command packets been droped
-//+++ fps: sets the frame rate of the game: default = 60
-//+++ testDuration: time in seconds till the game ends
 //+++ targetSpeed: default speed of moving objects (increases over time)
 //+++ speed_gain: movement speed gained over time
 //+++ MIN_INTERVAL_Shot: minumum time between two shots
 //+++ MIN_INTERVAL_Spawn: time till spawn of new target (unless no target available)
 
-// network or encoding
-var delay_val = 0;
-var PL = 0;
-var fps = 60;
+
 // game characteristics
 var targetSpeed = 3;
 const MIN_INTERVAL_Shot = 250;
 const MIN_INTERVAL_Spawn = 3000;
 var speed_gain = 1.1
-// others
-var testDuration = 90;
+
+// duration
+if (isTraining == 1)
+	testDuration = trainingDuration;
+else
+	testDuration = gamingDuration;
+
+// hasPlayed validation
+var InputThreshold = 410;
 
 //############ game elements ############
 //#######################################
@@ -76,10 +76,12 @@ var drawit = true;
 
 //############ log data #############
 //###################################
-var SendToServer = false;
-var gameID = "Shooting_C0";
-var gameVersion = "05072018v1";
-var baseURL = "http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
+if (isTraining == 1)
+	var gameID = "Shooting" + game_code + "_0_3";
+else
+	var gameID = "Shooting" + game_code + "_3";
+var hasPlayed = 1;
+var statsMD5;
 
 // store data
 String.prototype.format = String.prototype.f = function() {
@@ -330,16 +332,25 @@ function testPeriodisOver()
 	vcode=uuidv4();
 	console.log(stats);
 	gameStarted=false;
-	return
+	
+	// check if played properly based on number of inputs
+	var hasPlayed = 1;
+	if (keyLog.length < InputThreshold*0.2*(testDuration/90))
+		hasPlayed = 0;
+		
+	// put md5 before keyLog
+	statsMD5 = md5(stats);
+	
 	// call to the finish page..
 	if (SendToServer){
-		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
+		query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&train={7}&hp={8}&md={9}&st{10}&gs={6}";
+		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats,isTraining,hasPlayed,statsMD5,showToken);
 		console.log(call);
 
 		setTimeout(function() {
 			window.location.href=baseURL+call;
 		}, 1000);
-	} 
+	}
 }
 
 function uuidv4() {

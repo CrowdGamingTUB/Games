@@ -4,24 +4,24 @@
 
 //############ Adjustable parameters ############
 //###############################################
-//+++ delay_val: simulates x milliseconds of input delay
-//+++ PL: simulates x % of command packets been droped
-//+++ fps: sets the frame rate of the game: default = 60
-//+++ testDuration: time in seconds till the game ends
 //+++ difficulty: default speed of moving objects (increases over time)
 //+++ difficulty_gain: how much speed is added over time
 //+++ speed_gain: movement speed gained over time
 
-// network or encoding
-var delay_val = 0;
-var PL = 0;
-var fps = 60;
+
 // game characteristics
 var difficulty = 5;
 var difficulty_gain = 0.1;
 var speed_gain = 0.8;
-// others
-var testDuration = 90;
+
+// duration
+if (isTraining == 1)
+	testDuration = trainingDuration;
+else
+	testDuration = gamingDuration;
+
+// hasPlayed validation
+var InputThreshold = 175;
 
 //############ game elements ############
 //#######################################
@@ -55,11 +55,12 @@ var drawit = true;
 
 //############ log data #############
 //###################################
-var SendToServer = false;
-var gameID = "Dodge_C0";
-var gameVersion = "08072018v1";
-var baseURL = "http://gamingqoe.qu.tu-berlin.de/store/verification.php?"
-
+if (isTraining == 1)
+	var gameID = "Dodge" + game_code + "_0_3";
+else
+	var gameID = "Dodge" + game_code + "_3";
+var hasPlayed = 1;
+var statsMD5;
 
 // store data
 String.prototype.format = String.prototype.f = function() {
@@ -293,12 +294,12 @@ function RestartCountdown(){
 //Steven
 function RestartGame(){
 	// stats
-	scoreLog.push(score);
+	scoreLog.push(Math.round(score/10));
 	difficultyLog.push(round(10*difficulty)/10);
 	projectileLog.push(projectileCounter);
 	keyLog.push("|");
 	if (score > highscore)
-		highscore = score;
+		highscore = Math.round(score/10);
 	numberOfTries++;
 	// reset
 	projectiles = [];
@@ -320,23 +321,30 @@ function testPeriodisOver()
 	document.getElementById("Restart_Text").textContent="The playing time is over!";
 	noLoop();
 	noStroke();
-	scoreLog.push(score);
+	scoreLog.push(Math.round(score/10));
 	playTime = round(frameCount/60) - previousTime;
 	timeLog.push(playTime);
 	difficultyLog.push(round(10*difficulty)/10);
 	projectileLog.push(projectileCounter);
 	if (score > highscore)
-		highscore = score;
-	stats=getPlayStats();
+		highscore = Math.round(score/10);
+	stats=getPlayStats();	
 	vcode=uuidv4();
 	console.log(stats);
 	gameStarted=false;
-	return
+	
+	// check if played properly based on number of inputs
+	var hasPlayed = 1;
+	if (keyLog.length < InputThreshold*0.2*(testDuration/90))
+		hasPlayed = 0;
+		
+	// put md5 before keyLog
+	statsMD5 = md5(stats);
 	// call to the finish page..
 	if (SendToServer){
-		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats);
+		query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&train={7}&hp={8}&md={9}&st{10}&gs={6}";
+		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats,isTraining,hasPlayed,statsMD5,showToken);
 		console.log(call);
-
 		setTimeout(function() {
 			window.location.href=baseURL+call;
 		}, 1000);
