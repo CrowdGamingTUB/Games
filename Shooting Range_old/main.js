@@ -14,8 +14,7 @@
 var targetSpeed = 3;
 const MIN_INTERVAL_Shot = 250;
 const MIN_INTERVAL_Spawn = 3000;
-var speed_gain = 1.08
-var feedback = 3;
+var speed_gain = 1.1
 
 // duration
 if (isTraining == 1)
@@ -45,15 +44,14 @@ var minPoint = 0;
 var multiplier = 1;
 var myFrameCount = 0;
 //in second
-var now = new Date();
 var gameStarted = false;
 var gameRestarting = false;
 var restart_counter = 5;
 var gameStartDate = null;
 var timeLeft = testDuration;
-var lasthitTime = new Date();
+var lasthitTime = new Date();;
 var hitTime = null;
-var timeBetweenHits;
+var timeBetweenHits = null;
 var numberOfTries = 1;
 var scoreLog = [];
 var targetSpeedLog = [];
@@ -73,44 +71,15 @@ var acceptHit = false;
 var mouseCrossX = 0;
 var mouseCrossY = 0;
 var mousePositionQ=[];
-var mouseDown = false;
-// point msg
-var showPointsState;
-var showPoints = 0;
-var showPoints_x;
-var showPoints_y;
 // draw flag
 var drawit = true;
-// sound file
-var sound;
-// positions and other calculations
-var rnd;
-var hitReady;
-var bullet_x;
-var bullet_y;
-var bullet_dx;
-var bullet_dy;
-var time_x;
-var diff_x;
-var accu_x;
-var texts_y;
-var hud_x;
-var hud_y;
-var hud_dx;
-var hud_dy;
-var s_x;
-var s_y;
-var s_dx;
-var s_dy1;
-var s_dy2;
-
 
 //############ log data #############
 //###################################
 if (isTraining == 1)
-	var gameID = "Shooting_" + game_code + "_0_3";
+	var gameID = "Shooting" + game_code + "_0_3";
 else
-	var gameID = "Shooting_" + game_code + "_3";
+	var gameID = "Shooting" + game_code + "_3";
 var hasPlayed = 1;
 var statsMD5;
 
@@ -125,49 +94,13 @@ String.prototype.format = String.prototype.f = function() {
     return s;
 };
 
-function preload() {
-	// load backgroud image for game
-	bullet_false = loadImage("bullet_false.png");
-	bullet_true = loadImage("bullet_true.png");
-	myFont = loadFont("coolvetica.ttf");
-	cursor = loadImage("cursor.png");
-}
-
-function showPopup(){
-	swal('You left the game tab', '... please press "F5" to restart the game!', 'error');
-	noLoop();
-	clearInterval(testloop);
-}
-
-function loadPositions(){
-	bullet_x = 0.1*width-bullet_true.width/20;
-	bullet_y = 0.95*height-bullet_true.height/20;
-	bullet_dx = bullet_true.width/20;
-	bullet_dy = bullet_true.height/20;
-	time_x = 0.2*(width);
-	diff_x = 0.5*(width);
-	accu_x = 0.8*(width);
-	texts_y = 0.1*windowHeight;
-	hud_x = 0.68*width;
-	hud_y = 0.75*height;
-	hud_dx = 0.3*width;
-	hud_dy = 0.22*height;
-	s_x = 0.72*width;
-	s_y = 0.82*height;
-	s_dx = (s_x/width+0.15)*width;
-	s_dy1 = (s_y/height+0.05)*height;
-	s_dy2 = (s_y/height+0.1)*height;
-}
-
 // game setup function (canvas etc.)
 function setup() {
-	document.addEventListener("focus", showPopup);
-	textFont(myFont);
-	textSize(40);
+	// ST: might not be necessary
 	if (!gameStarted){
 		gameStarted=true;
 		gameStartDate= new Date();
-		testloop = setInterval(updateTimer, 1);
+		testloop= setInterval(updateTimer, 1000);
 	}
    
 	var cnv = createCanvas(0.9*windowWidth, 0.8*windowHeight);
@@ -177,8 +110,7 @@ function setup() {
 	document.getElementById("RestartDiv").style.padding = "0px";
 	document.getElementById("Restart_Text").style.fontSize = "xx-large"; 
 	textAlign(CENTER);
-	loadPositions()
-	sound = new Audio('barreta.mp3');
+	textSize(40);
 }
 
 function draw() {
@@ -193,8 +125,7 @@ function draw() {
 	}
 	
 	// create mousePostion object every frame and store it in array
-	// random number for packet loss ... will be used global from here
-	rnd = Math.floor((Math.random() * 1000))/10;
+	var rnd = Math.floor((Math.random() * 1000))/10;
 	if (rnd >= PL){
 		mp = new MousePosition(mouseX,mouseY);
 		mousePositionQ.push(mp);
@@ -202,107 +133,30 @@ function draw() {
 			oldP = mousePositionQ.shift();
 			mouseCrossX = oldP.x;
 			mouseCrossY = oldP.y;
+			var now = new Date();
 			var logTime = Math.floor(now.getTime() - oldP.mouseTime.getTime());
+			// console.log("dT: " + logTime);
 		}else{
 			mouseCrossX = mousePositionQ[0].x;
 			mouseCrossY = mousePositionQ[0].y;
 		}
 	}
-	
 	handleLevel(frameCount);
 	handleTargets();
 }
 
 function drawHUD() {
-	// timer
-	fill(255, 255, 2555, 188);
-	stroke(0, 0, 153);
-	strokeWeight(2);
-	textAlign(CENTER);
-	text("Time left: " + timeLeft + " sec",  time_x, texts_y);
-	
-	if (feedback >= 2){
-		// box for stats and score
-		fill(102, 153, 255, 127);
-		rect(hud_x, hud_y, hud_dx, hud_dy, 20, 10, 10, 5);
-		textSize(35);
-		textAlign(LEFT);
-		fill(255, 255, 2555, 188);	
-		text("Score: ", s_x, s_y);
-		text(score, s_dx, s_y);
-	}
-	
-	if (feedback == 3){
-		// show bullet icon
-		if (hitReady)
-			image(bullet_true, bullet_x, bullet_y, bullet_dx, bullet_dy);
-		else
-			image(bullet_false, bullet_x, bullet_y, bullet_dx, bullet_dy);
-		
-		// speed and accuracy
-		var diff = round(targetSpeed*100)/100 - 2;
-		text("Difficulty: " + Number.parseFloat(diff).toFixed(1),  diff_x, texts_y);
-		text("Accuracy: " + hitCounter + "/" + shotCounter,  accu_x, texts_y);
-		
-		// medals
-		if (score < 1000){
-			text("Your Medal:", s_x, s_dy1);
-			text("-", s_dx, s_dy1);
-			text("Bronze:", s_x, s_dy2);
-			text("1000", s_dx, s_dy2);
-		}else if (score < 5000){
-			text("Your Medal:", s_x, s_dy1);
-			text("Bronze", s_dx, s_dy1);
-			text("Silver:", s_x, s_dy2);
-			text("5000", s_dx, s_dy2);
-		}else if (score < 7500){	
-			text("Your Medal:", s_x, s_dy1);
-			text("Silver", s_dx, s_dy1);
-			text("Gold: ", s_x, s_dy2);
-			text("7500", s_dx, s_dy2);
-		}else if (score < 12000){
-			text("Your Medal:", s_x, s_dy1);
-			text("Gold", s_dx, s_dy1);
-			text("Platinum:", s_x, s_dy2);
-			text("12000", s_dx, s_dy2);
-		}else if (score > 11999){	
-			text("Your Medal:", s_x, s_dy1);
-			text("Platinum", s_dx, s_dy1);
-		}
-		textSize(40);
-		
-		// points popping up
-		if (abs(showPoints) > 0){
-			textSize(30);
-			if (showPoints==100){
-				fill(255,193,37);
-				text("+100", showPoints_x, showPoints_y);
-				if (frameCount%3)
-					showPoints_y = showPoints_y - 1;
-			}
-			else if (showPoints==50){
-				fill(205,51,51);
-				text("+50", showPoints_x, showPoints_y);
-				if (frameCount%3)
-					showPoints_y = showPoints_y - 1;
-			}
-			else if (showPoints==25){
-				fill(92,172,238);
-				text("+25", showPoints_x, showPoints_y);
-				if (frameCount%3)
-					showPoints_y = showPoints_y - 1;
-			}
-			else if (showPoints==-25){
-				fill(205,51,51);
-				text("-25", showPoints_x, showPoints_y);
-				if (frameCount%3)
-					showPoints_y = showPoints_y + 1;
-			}
-			textSize(40);
-		}
-	}
-}
 
+	stroke(255);
+	strokeWeight(5);
+
+	/* draw score */
+	fill(255,255,255);
+	noStroke();
+	text("Score: " + score,  0.5*(width), 0.1*windowHeight);
+	text("Accuracy: " + hitCounter + "/" + shotCounter,  0.8*(width), 0.1*windowHeight);
+	text("Time left: " + timeLeft + " sec",  0.2*(width), 0.1*windowHeight);
+}
 
 function handleTargets() {
 	
@@ -317,8 +171,7 @@ function handleTargets() {
 	strokeWeight(0);
 	fill(255, 0, 0);
 	if (drawit)
-		image(cursor, mouseCrossX - 16, mouseCrossY - 16, 32, 32);
-		// ellipse(mouseCrossX, mouseCrossY, 8, 8);
+		ellipse(mouseCrossX, mouseCrossY, 8, 8);
 	
 	// check if target was hitted
 	for (var i = 0; i < Targets.length; i++) {	
@@ -327,47 +180,29 @@ function handleTargets() {
 			endGame();
 			break;
 		}
-		
-		// mousePressed is expected here
-		
+			
+		if (mouseIsPressed === true){
+			// only accept a new click after some time passed
+			hitTime = new Date();
+			timeBetweenHits = Math.floor(hitTime.getTime() - lasthitTime.getTime());
+			if (timeBetweenHits > MIN_INTERVAL_Shot){
+				lasthitTime = hitTime;
+				acceptHit = true;
+			}
+		}
 		if (acceptHit && drawit && !gameRestarting)
 			DelayShotState = setTimeout(DelayShot, delay_val, i);
 		acceptHit = false;
 	}
 }
 
-function showPointsTimer(){
-	showPoints = 0;
-	clearTimeout(showPointsState);
-}
-			
-function mousePressed(){
-	// only accept a new click after some time passed
-	timeBetweenHits = Math.floor(now.getTime() - lasthitTime.getTime());
-	if ((timeBetweenHits > MIN_INTERVAL_Shot) && (!mouseDown))
-		acceptHit = true;
-}
-
-function mouseReleased(){
-	mouseDown = false;
-}
-
 function DelayShot (i){
-	if (typeof Targets[i] != "undefined"){
-		
-		if (rnd >= PL){
-			if (!sound.paused ) {
-				sound.pause();
-				sound.currentTime = 0;
-			} else {
-				sound.play();
-			}
-			Targets[i].hits(i,3);
-		}
-	}
+	if (typeof Targets[i] != "undefined")
+		Targets[i].hits(i,3);
 }
 
 function myMouseMove (){
+	var now =  new Date();
 	var keyStamp = Math.floor(now.getTime() - gameStartDate.getTime());
 	mouseCrossX = mouseX;
 	mouseCrossY = mouseY;
@@ -375,30 +210,32 @@ function myMouseMove (){
 
 function MousePosition(x,y){
 	this.mouseTime = new Date();
-	this.x = x;
-	this.y = y;
+	this.x=x;
+	this.y=y;
 }
 
 function handleLevel(n) {
 	myFrameCount += 1;
 	if (Targets.length == 0){
 		newTarget();
-		lastSpawnTime = now;
+		lastSpawnTime = new Date();
 	}
 	else{
-		timeBetweenSpawns = Math.floor(now.getTime() - lastSpawnTime.getTime());
+		spawnTime = new Date();
+		timeBetweenSpawns = Math.floor(spawnTime.getTime() - lastSpawnTime.getTime());
 		if (timeBetweenSpawns > MIN_INTERVAL_Spawn){
 			newTarget();
-			lastSpawnTime = now;
+			lastSpawnTime = spawnTime;
 		}	
 	}
 	if (n % 240 === 0) // every 4 seconds
 		targetSpeed *= speed_gain; // speed up
+	// score = round((myFrameCount * Math.pow(targetSpeed,2.5))/1000);
 }
 
 function newTarget() {
 	var size = random(30) + 150;
-	var obs = new Target(width + size, random(0.3,0.6)*height, size);
+	var obs = new Target(width + size, random(0.4,0.66)*height, size);
 	Targets.push(obs);
 }
 
@@ -434,7 +271,7 @@ function RestartCountdown(){
 		case -1:
 			document.getElementById("Restart_Text").textContent="";	
 			document.getElementById("RestartDiv").style.padding = "0px";
-			clearInterval(restartState);
+			clearTimeout(restartState);
 			RestartGame();
 			break;
 	}
@@ -506,7 +343,7 @@ function testPeriodisOver()
 	
 	// call to the finish page..
 	if (SendToServer){
-		query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&train={7}&hp={8}&md={9}&st={10}&gs={6}";
+		query="?pid=NN&gid={0}&gv={1}&c={2}&pd={3}&pt={4}:{5}&train={7}&hp={8}&md={9}&st{10}&gs={6}";
 		call=query.f(gameID,gameVersion,vcode,gameStartDate.toISOString().split('T')[0],gameStartDate.getHours(),gameStartDate.getMinutes(),stats,isTraining,hasPlayed,statsMD5,showToken);
 		console.log(call);
 
@@ -529,14 +366,9 @@ function getPlayStats(){
 }
 
 function updateTimer(){
-	now = new Date();
+	var now=  new Date();
 	var seconds = Math.floor((now.getTime() - gameStartDate.getTime()) / 1000);
 	timeLeft = testDuration - seconds;
 	if (timeLeft <= 0)
 		testPeriodisOver();
-	
-	if (Math.floor(now.getTime() - lasthitTime.getTime()) > MIN_INTERVAL_Shot)
-		hitReady = true;
-	else
-		hitReady = false;
 }

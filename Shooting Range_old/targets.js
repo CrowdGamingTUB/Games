@@ -62,49 +62,43 @@ Target.prototype.draw = function() {
 /** checks for collisions */
 Target.prototype.hits = function(i,n) {
 	shotCounter += 1;
-	lasthitTime = now;
 	// calculate if click was on a target and increase counter
 	var distance = dist(this.x, this.y, mouseCrossX, mouseCrossY);
 	var radius = (this.size)/2;
 	
 	//log actions
+	var now =  new Date();
 	var keyStamp = Math.floor(now.getTime() - gameStartDate.getTime());
 	keyLog.push("(" + round(10*mouseCrossX)/10 + "," + round(10*mouseCrossY)/10 + "," + round(10*this.x)/10 + "," + round(10*this.y)/10 + "," + keyStamp);
 	
 	if (distance < radius){
 		hitCounter += 1;
-		this.targetHitCounter += 1;
-		if (this.targetHitCounter == 1){
-			this.x_hit1 = mouseCrossX;
-			this.y_hit1 = mouseCrossY;
-		}else if (this.targetHitCounter == 2){
-			this.x_hit2 = mouseCrossX;
-			this.y_hit2 = mouseCrossY;
+		if (Math.floor((Math.random() * 1000))/10 >= PL){
+			this.targetHitCounter += 1;
+			if (this.targetHitCounter == 1){
+				this.x_hit1 = mouseCrossX;
+				this.y_hit1 = mouseCrossY;
+			}else if (this.targetHitCounter == 2){
+				this.x_hit2 = mouseCrossX;
+				this.y_hit2 = mouseCrossY;
+			}
+				
+			if (distance < 0.33*radius){
+				// console.log("bull eye");
+				score += multiplier*100;
+				maxPoint += 1;
+			}else if (distance < 0.66*radius){
+				// console.log("medium");
+				score += multiplier*50;
+				mediumPoint += 1;
+			}else if (distance < radius){
+				// console.log("hitted");
+				score += multiplier*25;
+				minPoint += 1;
+			}	
 		}
-			
-		if (distance < 0.33*radius){
-			showPoints = 100;
-			score += multiplier*100;
-			maxPoint += 1;
-		}else if (distance < 0.66*radius){
-			showPoints = 50;
-			score += multiplier*50;
-			mediumPoint += 1;
-		}else if (distance < radius){
-			showPoints = 25;
-			score += multiplier*25;
-			minPoint += 1;
-		}	
-		showPoints_x = this.x;
-		showPoints_y = this.y - this.size/1.7;
-	}else{
-		showPoints = -25;
-		showPoints_x = mouseCrossX;
-		showPoints_y = mouseCrossY + 20;
+	}else
 		score -= 25;
-	}
-	showPointsState = setTimeout(showPointsTimer, 1000);
-	
 	if (this.targetHitCounter >= n)
 		Targets.splice(i, 1);
 };
