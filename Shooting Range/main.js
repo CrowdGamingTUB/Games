@@ -15,7 +15,6 @@ var targetSpeed = 3;
 const MIN_INTERVAL_Shot = 250;
 const MIN_INTERVAL_Spawn = 3000;
 var speed_gain = 1.08
-var feedback = 3;
 
 // duration
 if (isTraining == 1)
@@ -83,6 +82,8 @@ var showPoints_y;
 var drawit = true;
 // sound file
 var sound;
+var medal = 1;
+var sound_medal;
 // positions and other calculations
 var rnd;
 var hitReady;
@@ -161,13 +162,13 @@ function loadPositions(){
 
 // game setup function (canvas etc.)
 function setup() {
-	document.addEventListener("focus", showPopup);
+	document.addEventListener("blur", showPopup);
 	textFont(myFont);
 	textSize(40);
 	if (!gameStarted){
 		gameStarted=true;
 		gameStartDate= new Date();
-		testloop = setInterval(updateTimer, 1);
+		testloop = setInterval(updateTimer, 10);
 	}
    
 	var cnv = createCanvas(0.9*windowWidth, 0.8*windowHeight);
@@ -179,6 +180,7 @@ function setup() {
 	textAlign(CENTER);
 	loadPositions()
 	sound = new Audio('barreta.mp3');
+	sound_medal = new Audio('medal.wav');
 }
 
 function draw() {
@@ -187,11 +189,8 @@ function draw() {
 	else	
 		drawit=false;
 	
-	if (drawit){
-		background(0);
-		drawHUD();
-	}
-	
+	drawHUD();
+		
 	// create mousePostion object every frame and store it in array
 	// random number for packet loss ... will be used global from here
 	rnd = Math.floor((Math.random() * 1000))/10;
@@ -213,93 +212,121 @@ function draw() {
 	handleTargets();
 }
 
-function drawHUD() {
-	// timer
-	fill(255, 255, 2555, 188);
-	stroke(0, 0, 153);
-	strokeWeight(2);
-	textAlign(CENTER);
-	text("Time left: " + timeLeft + " sec",  time_x, texts_y);
-	
-	if (feedback >= 2){
-		// box for stats and score
-		fill(102, 153, 255, 127);
-		rect(hud_x, hud_y, hud_dx, hud_dy, 20, 10, 10, 5);
-		textSize(35);
-		textAlign(LEFT);
-		fill(255, 255, 2555, 188);	
-		text("Score: ", s_x, s_y);
-		text(score, s_dx, s_y);
-	}
-	
-	if (feedback == 3){
-		// show bullet icon
-		if (hitReady)
-			image(bullet_true, bullet_x, bullet_y, bullet_dx, bullet_dy);
-		else
-			image(bullet_false, bullet_x, bullet_y, bullet_dx, bullet_dy);
+function drawHUD() {	
+
+	if (drawit){
+		background(0);
+		// timer
+		fill(255, 255, 2555, 188);
+		stroke(0, 0, 153);
+		strokeWeight(2);
+		textAlign(CENTER);
+		text("Time left: " + timeLeft + " sec",  time_x, texts_y);
 		
-		// speed and accuracy
-		var diff = round(targetSpeed*100)/100 - 2;
-		text("Difficulty: " + Number.parseFloat(diff).toFixed(1),  diff_x, texts_y);
-		text("Accuracy: " + hitCounter + "/" + shotCounter,  accu_x, texts_y);
+		if (feedback == 1)
+			text("Score: " + score,  accu_x, texts_y);
 		
-		// medals
-		if (score < 1000){
-			text("Your Medal:", s_x, s_dy1);
-			text("-", s_dx, s_dy1);
-			text("Bronze:", s_x, s_dy2);
-			text("1000", s_dx, s_dy2);
-		}else if (score < 5000){
-			text("Your Medal:", s_x, s_dy1);
-			text("Bronze", s_dx, s_dy1);
-			text("Silver:", s_x, s_dy2);
-			text("5000", s_dx, s_dy2);
-		}else if (score < 7500){	
-			text("Your Medal:", s_x, s_dy1);
-			text("Silver", s_dx, s_dy1);
-			text("Gold: ", s_x, s_dy2);
-			text("7500", s_dx, s_dy2);
-		}else if (score < 12000){
-			text("Your Medal:", s_x, s_dy1);
-			text("Gold", s_dx, s_dy1);
-			text("Platinum:", s_x, s_dy2);
-			text("12000", s_dx, s_dy2);
-		}else if (score > 11999){	
-			text("Your Medal:", s_x, s_dy1);
-			text("Platinum", s_dx, s_dy1);
-		}
-		textSize(40);
-		
-		// points popping up
-		if (abs(showPoints) > 0){
-			textSize(30);
-			if (showPoints==100){
-				fill(255,193,37);
-				text("+100", showPoints_x, showPoints_y);
-				if (frameCount%3)
-					showPoints_y = showPoints_y - 1;
-			}
-			else if (showPoints==50){
-				fill(205,51,51);
-				text("+50", showPoints_x, showPoints_y);
-				if (frameCount%3)
-					showPoints_y = showPoints_y - 1;
-			}
-			else if (showPoints==25){
-				fill(92,172,238);
-				text("+25", showPoints_x, showPoints_y);
-				if (frameCount%3)
-					showPoints_y = showPoints_y - 1;
-			}
-			else if (showPoints==-25){
-				fill(205,51,51);
-				text("-25", showPoints_x, showPoints_y);
-				if (frameCount%3)
-					showPoints_y = showPoints_y + 1;
+		if (feedback >= 2){
+			// box for stats and score
+			fill(102, 153, 255, 127);
+			rect(hud_x, hud_y, hud_dx, hud_dy, 20, 10, 10, 5);
+			textSize(35);
+			textAlign(LEFT);
+			fill(255, 255, 2555, 188);	
+			text("Score: ", s_x, s_y);
+			text(score, s_dx, s_y);
+			
+			// medals
+			if (score < 1000){
+				text("Your Medal:", s_x, s_dy1);
+				text("-", s_dx, s_dy1);
+				text("Bronze:", s_x, s_dy2);
+				text("1000", s_dx, s_dy2);
+			}else if (score < 5000){
+				text("Your Medal:", s_x, s_dy1);
+				text("Bronze", s_dx, s_dy1);
+				text("Silver:", s_x, s_dy2);
+				text("5000", s_dx, s_dy2);
+				if (medal == 1){
+					sound_medal.play();
+					medal = 2;
+				}
+			}else if (score < 7500){	
+				text("Your Medal:", s_x, s_dy1);
+				text("Silver", s_dx, s_dy1);
+				text("Gold: ", s_x, s_dy2);
+				text("7500", s_dx, s_dy2);
+				if (medal == 2){
+					sound_medal.play();
+					medal = 3;
+				}
+			}else if (score < 12000){
+				text("Your Medal:", s_x, s_dy1);
+				text("Gold", s_dx, s_dy1);
+				text("Platinum:", s_x, s_dy2);
+				text("12000", s_dx, s_dy2);
+				if (medal == 3){
+					sound_medal.play();
+					medal = 4;
+				}
+			}else if (score > 11999){	
+				text("Your Medal:", s_x, s_dy1);
+				text("Platinum", s_dx, s_dy1);
+				if (medal == 4){
+					sound_medal.play();
+					medal = 5;
+				}
 			}
 			textSize(40);
 		}
+		
+		if (feedback == 3){
+			// show bullet icon
+			if (hitReady)
+				image(bullet_true, bullet_x, bullet_y, bullet_dx, bullet_dy);
+			else
+				image(bullet_false, bullet_x, bullet_y, bullet_dx, bullet_dy);
+			
+			// speed and accuracy
+			textAlign(CENTER);
+			var diff = round(targetSpeed*100)/100 - 2;
+			text("Difficulty: " + Number.parseFloat(diff).toFixed(1),  diff_x, texts_y);
+			text("Accuracy: " + hitCounter + "/" + shotCounter,  accu_x, texts_y);
+		}
+	}
+	
+	// points popping up
+	if (!(showPoints == 0) && (feedback == 3)){
+		textSize(30);
+		if (showPoints==100){
+			fill(255,193,37);
+			if (drawit)
+				text("+100", showPoints_x, showPoints_y);
+			if (frameCount%3)
+				showPoints_y = showPoints_y - 1;
+		}
+		else if (showPoints==50){
+			fill(205,51,51);
+			if (drawit)
+				text("+50", showPoints_x, showPoints_y);
+			if (frameCount%3)
+				showPoints_y = showPoints_y - 1;
+		}
+		else if (showPoints==25){
+			fill(92,172,238);
+			if (drawit)
+				text("+25", showPoints_x, showPoints_y);
+			if (frameCount%3)
+				showPoints_y = showPoints_y - 1;
+		}
+		else if (showPoints==-25){
+			fill(205,51,51);
+			if (drawit)
+				text("-25", showPoints_x, showPoints_y);
+			if (frameCount%3)
+				showPoints_y = showPoints_y + 1;
+		}
+		textSize(40);
 	}
 }
 
@@ -330,7 +357,7 @@ function handleTargets() {
 		
 		// mousePressed is expected here
 		
-		if (acceptHit && drawit && !gameRestarting)
+		if (acceptHit && !gameRestarting)
 			DelayShotState = setTimeout(DelayShot, delay_val, i);
 		acceptHit = false;
 	}
@@ -356,11 +383,14 @@ function DelayShot (i){
 	if (typeof Targets[i] != "undefined"){
 		
 		if (rnd >= PL){
-			if (!sound.paused ) {
-				sound.pause();
-				sound.currentTime = 0;
-			} else {
-				sound.play();
+			if (feedback >= 2){
+				if (!sound.paused ) {
+					sound.pause();
+					sound.currentTime = 0;
+					sound.play();
+				} else {
+					sound.play();
+				}
 			}
 			Targets[i].hits(i,3);
 		}

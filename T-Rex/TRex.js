@@ -43,7 +43,7 @@ TRex.prototype.jump = function() {
 
 TRex.prototype.draw = function() {
 
-  fill('#999999');
+  fill(102, 153, 255);
 	stroke(255);
 	strokeWeight(2);
   ellipse(this.x, this.y, this.radius * 2);

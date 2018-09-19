@@ -1,10 +1,10 @@
 function Obstacle(x, size, horizon, color) {
 
-  this.x = x;
+	this.x = x;
 	this.y = horizon - size;
 
-  this.size = size;
-  this.color = color;
+	this.size = size;
+	this.color = color;
 
 	this.onScreen = true;
 }
